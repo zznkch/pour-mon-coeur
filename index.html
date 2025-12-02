@@ -26,6 +26,8 @@
             text-align: center;
             max-width: 500px;
             width: 100%;
+            z-index: 10;
+            position: relative;
         }
         
         /* Cœur principal */
@@ -40,6 +42,7 @@
             animation: heartbeat 1.5s ease-in-out infinite;
             box-shadow: 0 10px 30px rgba(233, 30, 99, 0.4);
             transition: transform 0.3s ease;
+            z-index: 10;
         }
         
         .heart:hover {
@@ -87,6 +90,8 @@
             align-items: center;
             justify-content: center;
             text-align: center;
+            backdrop-filter: blur(5px);
+            z-index: 10;
         }
         
         .message.show {
@@ -112,6 +117,9 @@
             font-size: 0.9rem;
             margin-top: 20px;
             font-style: italic;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+            z-index: 10;
+            position: relative;
         }
         
         /* Animations */
@@ -148,6 +156,105 @@
             }
         }
         
+        /* Fleurs en arrière-plan */
+        .flower-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        
+        .flower {
+            position: absolute;
+            font-size: 24px;
+            opacity: 0.8;
+            top: -50px;
+            animation-name: fall;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Styles de fleurs spécifiques */
+        .flower-rose {
+            color: #e91e63;
+            filter: drop-shadow(0 2px 4px rgba(233, 30, 99, 0.3));
+        }
+        
+        .flower-sunflower {
+            color: #ff9800;
+            filter: drop-shadow(0 2px 4px rgba(255, 152, 0, 0.3));
+        }
+        
+        .flower-lily {
+            color: #f8bbd0;
+            filter: drop-shadow(0 2px 4px rgba(248, 187, 208, 0.3));
+        }
+        
+        .flower-tulip {
+            color: #ec407a;
+            filter: drop-shadow(0 2px 4px rgba(236, 64, 122, 0.3));
+        }
+        
+        .flower-daisy {
+            color: #ffeb3b;
+            filter: drop-shadow(0 2px 4px rgba(255, 235, 59, 0.3));
+        }
+        
+        .flower-orchid {
+            color: #ab47bc;
+            filter: drop-shadow(0 2px 4px rgba(171, 71, 188, 0.3));
+        }
+        
+        .flower-hibiscus {
+            color: #d81b60;
+            filter: drop-shadow(0 2px 4px rgba(216, 27, 96, 0.3));
+        }
+        
+        /* Animation de chute des fleurs */
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.8;
+            }
+            10% {
+                transform: translateY(10vh) rotate(20deg);
+            }
+            20% {
+                transform: translateY(20vh) rotate(-15deg);
+            }
+            30% {
+                transform: translateY(30vh) rotate(10deg);
+            }
+            40% {
+                transform: translateY(40vh) rotate(-10deg);
+            }
+            50% {
+                transform: translateY(50vh) rotate(15deg);
+            }
+            60% {
+                transform: translateY(60vh) rotate(-5deg);
+            }
+            70% {
+                transform: translateY(70vh) rotate(10deg);
+            }
+            80% {
+                transform: translateY(80vh) rotate(0deg);
+            }
+            90% {
+                transform: translateY(90vh) rotate(-10deg);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+        }
+        
         /* Effet de particules */
         .particles {
             position: absolute;
@@ -156,7 +263,7 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: -1;
+            z-index: 5;
         }
         
         .particle {
@@ -191,6 +298,10 @@
                 font-size: 1.2rem;
                 padding: 18px 20px;
             }
+            
+            .flower {
+                font-size: 18px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -222,6 +333,10 @@
             .message::after {
                 font-size: 1rem;
             }
+            
+            .flower {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
@@ -233,6 +348,7 @@
     </div>
     
     <div class="particles" id="particles"></div>
+    <div class="flower-rain" id="flowerRain"></div>
 
     <script>
         // Phrases d'amour pour Rania
@@ -249,9 +365,72 @@
             "Rania t comme le plus beau des rêve devenu réalité à mes yeux"
         ];
         
+        // Différents types de fleurs (emojis)
+        const flowerTypes = [
+            { emoji: "🌸", class: "flower-cerisier" },   // Fleur de cerisier
+            { emoji: "💮", class: "flower-blanche" },    // Fleur blanche
+            { emoji: "🌺", class: "flower-hibiscus" },   // Hibiscus
+            { emoji: "🪷", class: "flower-lotus" },      // Lotus
+            { emoji: "🏵️", class: "flower-rosace" }     // Rosace
+        ];
+
+        
         const heart = document.getElementById('heart');
         const messageElement = document.getElementById('message');
         const particlesContainer = document.getElementById('particles');
+        const flowerRain = document.getElementById('flowerRain');
+        
+        // Fonction pour créer des fleurs qui tombent
+        function createFlowerRain() {
+            // Nombre de fleurs à créer (ajuster selon la taille de l'écran)
+            const flowerCount = window.innerWidth < 768 ? 15 : 30;
+            
+            for (let i = 0; i < flowerCount; i++) {
+                setTimeout(() => {
+                    createFlower();
+                }, i * 300); // Délai entre chaque fleur pour un effet plus naturel
+            }
+            
+            // Continuer à créer des fleurs toutes les 10 secondes
+            setInterval(createFlower, 1000);
+        }
+        
+        // Fonction pour créer une fleur individuelle
+        function createFlower() {
+            const flower = document.createElement('div');
+            flower.className = 'flower';
+            
+            // Choisir un type de fleur aléatoire
+            const flowerType = flowerTypes[Math.floor(Math.random() * flowerTypes.length)];
+            flower.textContent = flowerType.emoji;
+            flower.classList.add(flowerType.class);
+            
+            // Taille aléatoire
+            const size = Math.random() * 30 + 20;
+            flower.style.fontSize = `${size}px`;
+            
+            // Position de départ aléatoire
+            const startX = Math.random() * 100;
+            flower.style.left = `${startX}vw`;
+            
+            // Vitesse de chute aléatoire
+            const duration = Math.random() * 10 + 10;
+            flower.style.animationDuration = `${duration}s`;
+            
+            // Délai de départ aléatoire
+            const delay = Math.random() * 5;
+            flower.style.animationDelay = `${delay}s`;
+            
+            // Ajouter la fleur au conteneur
+            flowerRain.appendChild(flower);
+            
+            // Supprimer la fleur après l'animation
+            setTimeout(() => {
+                if (flower.parentNode) {
+                    flower.remove();
+                }
+            }, (duration + delay) * 1000);
+        }
         
         // Fonction pour créer des particules
         function createParticles(x, y) {
@@ -323,23 +502,79 @@
                 const y = heartRect.top + heartRect.height / 2;
                 createParticles(x, y);
                 
+                // Ajouter quelques fleurs supplémentaires lors du clic
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        createFlowerNearHeart(x, y);
+                    }, i * 100);
+                }
+                
             }, 300);
+        }
+        
+        // Fonction pour créer des fleurs près du cœur lors du clic
+        function createFlowerNearHeart(heartX, heartY) {
+            const flower = document.createElement('div');
+            flower.className = 'flower';
+            
+            // Choisir un type de fleur aléatoire
+            const flowerType = flowerTypes[Math.floor(Math.random() * flowerTypes.length)];
+            flower.textContent = flowerType.emoji;
+            flower.classList.add(flowerType.class);
+            
+            // Taille aléatoire
+            const size = Math.random() * 25 + 20;
+            flower.style.fontSize = `${size}px`;
+            
+            // Position près du cœur
+            const offsetX = (Math.random() - 0.5) * 200;
+            const offsetY = (Math.random() - 0.5) * 200;
+            flower.style.left = `${heartX + offsetX}px`;
+            flower.style.top = `${heartY + offsetY}px`;
+            
+            // Animation spéciale pour les fleurs créées au clic
+            flower.style.animationName = 'fall';
+            flower.style.animationDuration = `${Math.random() * 3 + 2}s`;
+            flower.style.animationDelay = '0s';
+            
+            // Ajouter la fleur au conteneur
+            flowerRain.appendChild(flower);
+            
+            // Supprimer la fleur après l'animation
+            setTimeout(() => {
+                if (flower.parentNode) {
+                    flower.remove();
+                }
+            }, 5000);
         }
         
         // Événement de clic sur le cœur
         heart.addEventListener('click', showRandomMessage);
         
-        // Afficher un message au chargement de la page (optionnel)
+        // Événement de toucher pour mobile
+        heart.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Empêcher le défilement
+            showRandomMessage();
+        });
+        
+        // Afficher un message au chargement de la page
         window.addEventListener('load', () => {
+            // Démarrer la pluie de fleurs
+            createFlowerRain();
+            
+            // Afficher un message après un délai
             setTimeout(() => {
                 showRandomMessage();
             }, 1000);
         });
         
-        // Événement de toucher pour mobile
-        heart.addEventListener('touchstart', (e) => {
-            e.preventDefault(); // Empêcher le défilement
-            showRandomMessage();
+        // Ajuster la pluie de fleurs lors du redimensionnement de la fenêtre
+        window.addEventListener('resize', () => {
+            // Vider le conteneur de fleurs
+            flowerRain.innerHTML = '';
+            
+            // Recréer la pluie de fleurs
+            createFlowerRain();
         });
     </script>
 </body>
