@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cœur pour Rania</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #ffebee, #fce4ec);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            padding: 20px;
+        }
+        
+        .container {
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        /* Cœur principal */
+        .heart {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            background-color: #e91e63;
+            margin: 0 auto 40px;
+            transform: rotate(45deg);
+            cursor: pointer;
+            animation: heartbeat 1.5s ease-in-out infinite;
+            box-shadow: 0 10px 30px rgba(233, 30, 99, 0.4);
+            transition: transform 0.3s ease;
+        }
+        
+        .heart:hover {
+            transform: rotate(45deg) scale(1.1);
+        }
+        
+        .heart:before,
+        .heart:after {
+            content: '';
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background-color: #e91e63;
+            border-radius: 50%;
+        }
+        
+        .heart:before {
+            top: -75px;
+            left: 0;
+        }
+        
+        .heart:after {
+            top: 0;
+            left: -75px;
+        }
+        
+        /* Message d'amour */
+        .message {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px 25px;
+            margin: 20px auto;
+            max-width: 450px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(232, 30, 99, 0.3);
+            font-size: 1.4rem;
+            color: #d81b60;
+            font-weight: 600;
+            line-height: 1.5;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .message::before {
+            content: "💖";
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .message::after {
+            content: "💖";
+            margin-left: 10px;
+            font-size: 1.2rem;
+        }
+        
+        /* Instructions */
+        .instructions {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 20px;
+            font-style: italic;
+        }
+        
+        /* Animations */
+        @keyframes heartbeat {
+            0% {
+                transform: rotate(45deg) scale(0.9);
+            }
+            5% {
+                transform: rotate(45deg) scale(1);
+            }
+            10% {
+                transform: rotate(45deg) scale(0.9);
+            }
+            15% {
+                transform: rotate(45deg) scale(1.1);
+            }
+            50% {
+                transform: rotate(45deg) scale(0.9);
+            }
+            100% {
+                transform: rotate(45deg) scale(0.9);
+            }
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 10px 30px rgba(233, 30, 99, 0.4);
+            }
+            50% {
+                box-shadow: 0 10px 40px rgba(233, 30, 99, 0.6);
+            }
+            100% {
+                box-shadow: 0 10px 30px rgba(233, 30, 99, 0.4);
+            }
+        }
+        
+        /* Effet de particules */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            background-color: #ff4081;
+            border-radius: 50%;
+            opacity: 0;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .heart {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .heart:before,
+            .heart:after {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .heart:before {
+                top: -60px;
+            }
+            
+            .heart:after {
+                left: -60px;
+            }
+            
+            .message {
+                font-size: 1.2rem;
+                padding: 18px 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .heart {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .heart:before,
+            .heart:after {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .heart:before {
+                top: -50px;
+            }
+            
+            .heart:after {
+                left: -50px;
+            }
+            
+            .message {
+                font-size: 1.1rem;
+                padding: 15px 18px;
+            }
+            
+            .message::before,
+            .message::after {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="heart" id="heart"></div>
+        <div class="message" id="message"></div>
+        <p class="instructions">Clique sur le cœur pour voir un message pour toi</p>
+    </div>
+    
+    <div class="particles" id="particles"></div>
+
+    <script>
+        // Phrases d'amour pour Rania
+        const messages = [
+            "Je t'aime Rania plus que tout au monde",
+            "Rania t la lumière de ma vie",
+            "Je remercie Allah pour chaque jour passer avec toi Rania",
+            "Rania tu rends ma vie meilleure",
+            "Mon amour pour toi Rania est aussi grand que l'écume de la mer",
+            "Rania t la personne la plus incroyable que j'ai jamais rencontrée",
+            "Je suis tellement fier de toi Rania",
+            "Rania tu mérites tout le bonheur du monde",
+            "Mon cœur bat pour toi ma Rania",
+            "Rania t comme le plus beau des rêve devenu réalité à mes yeux"
+        ];
+        
+        const heart = document.getElementById('heart');
+        const messageElement = document.getElementById('message');
+        const particlesContainer = document.getElementById('particles');
+        
+        // Fonction pour créer des particules
+        function createParticles(x, y) {
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particlesContainer.appendChild(particle);
+                
+                // Taille aléatoire
+                const size = Math.random() * 15 + 5;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Position
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                
+                // Animation
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 80 + 40;
+                const distance = Math.random() * 100 + 50;
+                
+                const animation = particle.animate([
+                    {
+                        transform: `translate(0, 0) scale(1)`,
+                        opacity: 1
+                    },
+                    {
+                        transform: `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px) scale(0)`,
+                        opacity: 0
+                    }
+                ], {
+                    duration: Math.random() * 1000 + 500,
+                    easing: 'cubic-bezier(0.215, 0.61, 0.355, 1)'
+                });
+                
+                // Supprimer l'élément après l'animation
+                animation.onfinish = () => {
+                    particle.remove();
+                };
+            }
+        }
+        
+        // Fonction pour afficher un message aléatoire
+        function showRandomMessage() {
+            // Masquer le message actuel
+            messageElement.classList.remove('show');
+            
+            // Attendre la fin de l'animation de disparition
+            setTimeout(() => {
+                // Choisir un message aléatoire
+                const randomIndex = Math.floor(Math.random() * messages.length);
+                messageElement.textContent = messages[randomIndex];
+                
+                // Afficher le message avec animation
+                setTimeout(() => {
+                    messageElement.classList.add('show');
+                }, 50);
+                
+                // Ajouter un effet de pulsation au cœur
+                heart.style.animation = 'none';
+                setTimeout(() => {
+                    heart.style.animation = 'heartbeat 1.5s ease-in-out infinite';
+                }, 10);
+                
+                // Créer des particules
+                const heartRect = heart.getBoundingClientRect();
+                const x = heartRect.left + heartRect.width / 2;
+                const y = heartRect.top + heartRect.height / 2;
+                createParticles(x, y);
+                
+            }, 300);
+        }
+        
+        // Événement de clic sur le cœur
+        heart.addEventListener('click', showRandomMessage);
+        
+        // Afficher un message au chargement de la page (optionnel)
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                showRandomMessage();
+            }, 1000);
+        });
+        
+        // Événement de toucher pour mobile
+        heart.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Empêcher le défilement
+            showRandomMessage();
+        });
+    </script>
+</body>
+</html>
